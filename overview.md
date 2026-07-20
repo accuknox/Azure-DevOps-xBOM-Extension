@@ -12,7 +12,7 @@ One task covers three BOM types — pick what you need with the **BOM Type** inp
 - **CycloneDX 1.6** – Standard, portable output.
 - **Uploaded and archived** – Results land in the AccuKnox Console and the BOM is attached to the pipeline run as a downloadable artifact.
 
-> ⚠️ **Linux agents only.** The task downloads a `linux_amd64` CLI build. Use `ubuntu-latest` or a Linux self-hosted agent.
+Runs on Linux, macOS and Windows agents (amd64 or arm64; Windows is amd64 only). The task downloads the CLI build matching the agent automatically.
 
 ## Setup
 
@@ -44,7 +44,7 @@ All examples assume the credentials are defined as pipeline variables: `ACCUKNOX
 ### 1. SBOM from a filesystem
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: sbom
     scanPath: '.'
@@ -64,7 +64,7 @@ All examples assume the credentials are defined as pipeline variables: `ACCUKNOX
     echo "##vso[task.setvariable variable=IMAGE]$IMAGE"
   displayName: Build image
 
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: sbom
     imageRef: $(IMAGE)
@@ -78,7 +78,7 @@ All examples assume the credentials are defined as pipeline variables: `ACCUKNOX
 ### 3. CBOM from Go source
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: cbom
     scanPath: '.'
@@ -92,7 +92,7 @@ All examples assume the credentials are defined as pipeline variables: `ACCUKNOX
 ### 4. CBOM from a container image
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: cbom
     imageRef: $(IMAGE)
@@ -106,7 +106,7 @@ All examples assume the credentials are defined as pipeline variables: `ACCUKNOX
 ### 5. AIBOM from a HuggingFace model
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: aibom
     aibomSource: huggingface
@@ -121,7 +121,7 @@ All examples assume the credentials are defined as pipeline variables: `ACCUKNOX
 ### 6. AIBOM from AWS Bedrock
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: aibom
     aibomSource: bedrock

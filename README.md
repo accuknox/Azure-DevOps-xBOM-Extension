@@ -29,7 +29,18 @@ The **AccuKnox xBOM** task integrates into your Azure DevOps pipeline to:
 | `cbom` | Go source or container image | Crypto algorithms, certs, protocols |
 | `aibom` | HuggingFace model or AWS Bedrock | AI/ML model inventory |
 
-> ⚠️ **Linux agents only.** The task downloads a `linux_amd64` CLI build. Use `ubuntu-latest` or a Linux self-hosted agent.
+### Agent Requirements
+
+The task downloads the AccuKnox CLI build matching the agent it runs on:
+
+| Agent OS | Architecture | Supported |
+|---|---|---|
+| Linux | amd64, arm64 | ✅ |
+| macOS | amd64, arm64 | ✅ |
+| Windows | amd64 | ✅ |
+| Windows | arm64 | ❌ — no upstream build |
+
+`tar` is used to unpack the CLI. It ships with every Microsoft-hosted image, including Windows Server 2019 and later.
 
 ---
 
@@ -77,7 +88,7 @@ Uploaded BOMs are associated with a Project, so create one before the first run.
 > Scans the repository source tree for packages and dependencies.
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: sbom
     scanPath: '.'
@@ -111,7 +122,7 @@ Uploaded BOMs are associated with a Project, so create one before the first run.
     echo "##vso[task.setvariable variable=IMAGE]$IMAGE"
   displayName: Build image
 
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: sbom
     imageRef: $(IMAGE)
@@ -137,7 +148,7 @@ Uploaded BOMs are associated with a Project, so create one before the first run.
 > Scans Go source for cryptographic algorithms, protocols, and certificates.
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: cbom
     scanPath: '.'
@@ -161,7 +172,7 @@ Uploaded BOMs are associated with a Project, so create one before the first run.
 > Scans a container image for cryptographic algorithms, protocols, and certificates.
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: cbom
     imageRef: $(IMAGE)
@@ -179,7 +190,7 @@ Uploaded BOMs are associated with a Project, so create one before the first run.
 > Inventories an AI/ML model by fetching its metadata from the HuggingFace Hub API.
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: aibom
     aibomSource: huggingface
@@ -205,7 +216,7 @@ Uploaded BOMs are associated with a Project, so create one before the first run.
 > Inventories every foundation model accessible in your AWS Bedrock account for the given region. Requires AWS credentials with the `bedrock:ListFoundationModels` permission.
 
 ```yaml
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   inputs:
     bomType: aibom
     aibomSource: bedrock
@@ -253,7 +264,7 @@ pool:
 steps:
 - checkout: self
 
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   displayName: AccuKnox xBOM Scan
   inputs:
     bomType: sbom

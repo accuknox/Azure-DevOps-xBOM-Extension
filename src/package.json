@@ -1,6 +1,6 @@
 {
   "name": "accuknox-xbom",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "AccuKnox xBOM task for Azure DevOps (SBOM, CBOM, AIBOM).",
   "main": "index.js",
   "scripts": {

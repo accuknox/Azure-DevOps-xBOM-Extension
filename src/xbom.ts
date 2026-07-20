@@ -6,6 +6,29 @@ import { spawn } from 'child_process';
 
 const KNOXCTL_BASE_URL = 'https://github.com/accuknox/accuknox-cli-v2/releases/download';
 
+/**
+ * The <os>_<arch> segment of the knoxctl release asset name, for the agent we
+ * are running on. Releases carry linux/darwin (amd64 + arm64) and windows
+ * (amd64 only), so an arm64 Windows agent has nothing to download.
+ */
+export function releaseTarget(platform: string = process.platform, arch: string = process.arch): string {
+  const osName = { linux: 'linux', darwin: 'darwin', win32: 'windows' }[platform];
+  if (!osName) {
+    throw new Error(`Unsupported agent platform '${platform}'. knoxctl ships linux, darwin and windows builds.`);
+  }
+
+  const archName = { x64: 'amd64', arm64: 'arm64' }[arch];
+  if (!archName) {
+    throw new Error(`Unsupported agent architecture '${arch}'. knoxctl ships amd64 and arm64 builds.`);
+  }
+
+  if (osName === 'windows' && archName !== 'amd64') {
+    throw new Error(`knoxctl has no windows_${archName} build. Use an amd64 Windows agent, or a Linux agent.`);
+  }
+
+  return `${osName}_${archName}`;
+}
+
 export interface XbomConfig {
   endpoint: string;
   token: string;
@@ -54,24 +77,26 @@ export class XbomScanner {
     const semver = this.cfg.version.replace(/^v/, '');
     const binDir = path.join(os.tmpdir(), 'knoxctl-bin');
     const tarball = path.join(os.tmpdir(), 'knoxctl.tar.gz');
-    const url = `${KNOXCTL_BASE_URL}/${this.cfg.version}/knoxctl_${semver}_linux_amd64.tar.gz`;
+    const url = `${KNOXCTL_BASE_URL}/${this.cfg.version}/knoxctl_${semver}_${releaseTarget()}.tar.gz`;
 
     fs.mkdirSync(binDir, { recursive: true });
-    console.log(`Downloading knoxctl (${this.cfg.version})...`);
+    console.log(`Downloading knoxctl ${this.cfg.version} for ${releaseTarget()}...`);
     await this.download(url, tarball);
 
-    // ponytail: shelling out to tar beats pulling in a tar library; the knoxctl
-    // release is linux_amd64 only, so this task is Linux-agent only regardless.
+    // ponytail: shelling out to tar beats pulling in a tar library. bsdtar ships
+    // in Windows Server 2019+ and every macOS/Linux image, so this is portable.
     const code = await this.spawnAndWait('tar', ['-xzf', tarball, '-C', binDir], process.env);
     if (code !== 0) {
       throw new Error(`Failed to extract knoxctl archive (tar exited ${code}).`);
     }
 
-    const bin = path.join(binDir, 'knoxctl');
+    const bin = path.join(binDir, process.platform === 'win32' ? 'knoxctl.exe' : 'knoxctl');
     if (!fs.existsSync(bin)) {
       throw new Error(`knoxctl not found at ${bin} after extraction.`);
     }
-    fs.chmodSync(bin, 0o755);
+    if (process.platform !== 'win32') {
+      fs.chmodSync(bin, 0o755);
+    }
     this.knoxctlBin = bin;
     console.log(`knoxctl installed at ${bin}`);
     await this.exec(['version']);

@@ -3,7 +3,8 @@
 # Define ACCUKNOX_ENDPOINT, ACCUKNOX_TOKEN and ACCUKNOX_LABEL as *secret*
 # pipeline variables (Pipelines -> Library, or the pipeline's Variables tab).
 #
-# The task downloads a linux_amd64 CLI build, so it needs a Linux agent.
+# Runs on Linux, macOS and Windows agents; the matching CLI build is
+# downloaded automatically.
 
 trigger:
   branches:
@@ -18,7 +19,7 @@ steps:
 - checkout: self
 
 # --- SBOM from the source tree -----------------------------------------------
-- task: AccuKnox-xBOM@1
+- task: AccuKnox-xBOM@2
   displayName: AccuKnox SBOM Scan
   inputs:
     bomType: sbom
@@ -36,7 +37,7 @@ steps:
 #     echo "##vso[task.setvariable variable=IMAGE]$IMAGE"
 #   displayName: Build image
 #
-# - task: AccuKnox-xBOM@1
+# - task: AccuKnox-xBOM@2
 #   displayName: AccuKnox SBOM Scan (image)
 #   inputs:
 #     bomType: sbom
@@ -48,7 +49,7 @@ steps:
 #     projectClassifier: container
 
 # --- CBOM from Go source ------------------------------------------------------
-# - task: AccuKnox-xBOM@1
+# - task: AccuKnox-xBOM@2
 #   displayName: AccuKnox CBOM Scan
 #   inputs:
 #     bomType: cbom
@@ -60,7 +61,7 @@ steps:
 #     projectClassifier: application
 
 # --- AIBOM from a HuggingFace model -------------------------------------------
-# - task: AccuKnox-xBOM@1
+# - task: AccuKnox-xBOM@2
 #   displayName: AccuKnox AIBOM Scan
 #   inputs:
 #     bomType: aibom
@@ -73,7 +74,7 @@ steps:
 #     projectClassifier: machine-learning-model
 
 # --- AIBOM from AWS Bedrock ---------------------------------------------------
-# - task: AccuKnox-xBOM@1
+# - task: AccuKnox-xBOM@2
 #   displayName: AccuKnox AIBOM Scan (Bedrock)
 #   inputs:
 #     bomType: aibom

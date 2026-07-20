@@ -9,7 +9,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { XbomScanner } = require('./xbom');
+const { XbomScanner, releaseTarget } = require('./xbom');
 const { validateInputs } = require('./index');
 
 let passed = 0;
@@ -67,6 +67,35 @@ function stubScanner() {
 }
 
 async function main() {
+  console.log('releaseTarget');
+
+  check('maps the three supported operating systems', () => {
+    assert.strictEqual(releaseTarget('linux', 'x64'), 'linux_amd64');
+    assert.strictEqual(releaseTarget('darwin', 'arm64'), 'darwin_arm64');
+    assert.strictEqual(releaseTarget('win32', 'x64'), 'windows_amd64');
+  });
+
+  check('maps both supported architectures', () => {
+    assert.strictEqual(releaseTarget('linux', 'arm64'), 'linux_arm64');
+    assert.strictEqual(releaseTarget('darwin', 'x64'), 'darwin_amd64');
+  });
+
+  check('rejects a platform with no knoxctl build', () => {
+    assert.throws(() => releaseTarget('aix', 'x64'), /Unsupported agent platform/);
+  });
+
+  check('rejects an architecture with no knoxctl build', () => {
+    assert.throws(() => releaseTarget('linux', 'ppc64'), /Unsupported agent architecture/);
+  });
+
+  check('rejects windows arm64, which upstream does not publish', () => {
+    assert.throws(() => releaseTarget('win32', 'arm64'), /no windows_arm64 build/);
+  });
+
+  check('resolves for the agent actually running the tests', () => {
+    assert.match(releaseTarget(), /^(linux|darwin|windows)_(amd64|arm64)$/);
+  });
+
   console.log('validateInputs');
 
   check('accepts a plain SBOM', () => {
