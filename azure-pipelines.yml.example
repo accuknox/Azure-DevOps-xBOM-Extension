@@ -1,0 +1,88 @@
+# AccuKnox xBOM Scan — example pipeline.
+#
+# Define ACCUKNOX_ENDPOINT, ACCUKNOX_TOKEN and ACCUKNOX_LABEL as *secret*
+# pipeline variables (Pipelines -> Library, or the pipeline's Variables tab).
+#
+# The task downloads a linux_amd64 CLI build, so it needs a Linux agent.
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+
+# --- SBOM from the source tree -----------------------------------------------
+- task: AccuKnox-xBOM@1
+  displayName: AccuKnox SBOM Scan
+  inputs:
+    bomType: sbom
+    scanPath: '.'
+    accuknoxEndpoint: $(ACCUKNOX_ENDPOINT)
+    accuknoxToken: $(ACCUKNOX_TOKEN)
+    accuknoxLabel: $(ACCUKNOX_LABEL)
+    projectName: my-project
+    projectClassifier: application
+
+# --- SBOM from a container image ---------------------------------------------
+# - script: |
+#     IMAGE="myapp:$(Build.SourceVersion)"
+#     docker build -t "$IMAGE" .
+#     echo "##vso[task.setvariable variable=IMAGE]$IMAGE"
+#   displayName: Build image
+#
+# - task: AccuKnox-xBOM@1
+#   displayName: AccuKnox SBOM Scan (image)
+#   inputs:
+#     bomType: sbom
+#     imageRef: $(IMAGE)
+#     accuknoxEndpoint: $(ACCUKNOX_ENDPOINT)
+#     accuknoxToken: $(ACCUKNOX_TOKEN)
+#     accuknoxLabel: $(ACCUKNOX_LABEL)
+#     projectName: my-project
+#     projectClassifier: container
+
+# --- CBOM from Go source ------------------------------------------------------
+# - task: AccuKnox-xBOM@1
+#   displayName: AccuKnox CBOM Scan
+#   inputs:
+#     bomType: cbom
+#     scanPath: '.'
+#     accuknoxEndpoint: $(ACCUKNOX_ENDPOINT)
+#     accuknoxToken: $(ACCUKNOX_TOKEN)
+#     accuknoxLabel: $(ACCUKNOX_LABEL)
+#     projectName: my-project
+#     projectClassifier: application
+
+# --- AIBOM from a HuggingFace model -------------------------------------------
+# - task: AccuKnox-xBOM@1
+#   displayName: AccuKnox AIBOM Scan
+#   inputs:
+#     bomType: aibom
+#     aibomSource: huggingface
+#     aibomModel: google-bert/bert-base-uncased
+#     accuknoxEndpoint: $(ACCUKNOX_ENDPOINT)
+#     accuknoxToken: $(ACCUKNOX_TOKEN)
+#     accuknoxLabel: $(ACCUKNOX_LABEL)
+#     projectName: my-project
+#     projectClassifier: machine-learning-model
+
+# --- AIBOM from AWS Bedrock ---------------------------------------------------
+# - task: AccuKnox-xBOM@1
+#   displayName: AccuKnox AIBOM Scan (Bedrock)
+#   inputs:
+#     bomType: aibom
+#     aibomSource: bedrock
+#     awsRegion: us-east-1
+#     awsAccessKeyId: $(AWS_ACCESS_KEY_ID)
+#     awsSecretAccessKey: $(AWS_SECRET_ACCESS_KEY)
+#     accuknoxEndpoint: $(ACCUKNOX_ENDPOINT)
+#     accuknoxToken: $(ACCUKNOX_TOKEN)
+#     accuknoxLabel: $(ACCUKNOX_LABEL)
+#     projectName: my-project
+#     projectClassifier: machine-learning-model

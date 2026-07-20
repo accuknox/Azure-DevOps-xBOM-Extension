@@ -1,0 +1,42 @@
+{
+    "manifestVersion": 1,
+    "id": "accuknox-xbom",
+    "name": "AccuKnox xBOM Scan",
+    "version": "1.0.0",
+    "publisher": "AccuKnox",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "description": "Generate an SBOM, CBOM or AIBOM from your source tree, container image or AI model inventory and upload it to the AccuKnox Console.",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "icons": {
+        "default": "images/logo.png"
+    },
+    "files": [
+        {
+            "path": "src"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "accuknox-xbom",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "src"
+            }
+        }
+    ],
+    "public": true,
+    "content": {
+        "details": {
+            "path": "overview.md"
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "accuknox-xbom",
+  "version": "1.0.0",
+  "description": "AccuKnox xBOM task for Azure DevOps (SBOM, CBOM, AIBOM).",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node test.js"
+  },
+  "keywords": [
+    "accuknox",
+    "sbom",
+    "cbom",
+    "aibom",
+    "cyclonedx",
+    "azure-devops"
+  ],
+  "author": "AccuKnox",
+  "license": "ISC",
+  "dependencies": {
+    "azure-devops-extension-sdk": "^4.0.2",
+    "azure-pipelines-task-lib": "^4.17.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.4.5"
+  }
+}

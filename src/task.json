@@ -1,0 +1,185 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+    "id": "1c21b597-01ae-4057-b45e-30d83f3f5546",
+    "name": "AccuKnox-xBOM",
+    "friendlyName": "AccuKnox xBOM Scan",
+    "description": "Generate an SBOM, CBOM or AIBOM and upload it to the AccuKnox Console.",
+    "helpMarkDown": "Generates a CycloneDX Bill of Materials from your source tree, a container image, or an AI model inventory, then uploads it to the AccuKnox Console and attaches it to the build as an artifact.",
+    "category": "Utility",
+    "author": "AccuKnox",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
+    },
+    "instanceNameFormat": "AccuKnox xBOM Scan ($(bomType))",
+    "groups": [
+        { "name": "target", "displayName": "Scan Target", "isExpanded": true },
+        { "name": "aibom", "displayName": "AIBOM Options", "isExpanded": false },
+        { "name": "advanced", "displayName": "Advanced", "isExpanded": false }
+    ],
+    "inputs": [
+        {
+            "name": "bomType",
+            "type": "pickList",
+            "label": "BOM Type",
+            "defaultValue": "sbom",
+            "required": true,
+            "helpMarkDown": "SBOM (packages and dependencies), CBOM (cryptographic assets) or AIBOM (AI/ML model inventory).",
+            "options": {
+                "sbom": "SBOM",
+                "cbom": "CBOM",
+                "aibom": "AIBOM"
+            }
+        },
+        {
+            "name": "accuknoxEndpoint",
+            "type": "string",
+            "label": "AccuKnox API Endpoint",
+            "required": true,
+            "helpMarkDown": "Hostname of the AccuKnox Console, without the scheme (e.g. cspm.accuknox.com)."
+        },
+        {
+            "name": "accuknoxToken",
+            "type": "string",
+            "label": "AccuKnox Token",
+            "required": true,
+            "helpMarkDown": "Token for authenticating with the AccuKnox Console. Pass this from a secret pipeline variable."
+        },
+        {
+            "name": "accuknoxLabel",
+            "type": "string",
+            "label": "AccuKnox Label",
+            "required": true,
+            "helpMarkDown": "The label created in AccuKnox SaaS for associating results."
+        },
+        {
+            "name": "projectName",
+            "type": "string",
+            "label": "Project Name",
+            "required": true,
+            "helpMarkDown": "Must exactly match a project created under Console → SBOM → Projects."
+        },
+        {
+            "name": "projectClassifier",
+            "type": "pickList",
+            "label": "Project Classifier",
+            "defaultValue": "application",
+            "required": true,
+            "helpMarkDown": "Must exactly match the classifier set on the project in the AccuKnox Console.",
+            "options": {
+                "application": "application",
+                "container": "container",
+                "firmware": "firmware",
+                "library": "library",
+                "machine-learning-model": "machine-learning-model"
+            }
+        },
+        {
+            "name": "scanPath",
+            "type": "string",
+            "label": "Scan Path",
+            "defaultValue": ".",
+            "required": false,
+            "groupName": "target",
+            "helpMarkDown": "Directory to scan. Ignored when Image Reference is set. Not used for AIBOM.",
+            "visibleRule": "bomType != aibom"
+        },
+        {
+            "name": "imageRef",
+            "type": "string",
+            "label": "Image Reference",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "target",
+            "helpMarkDown": "Container image to scan (e.g. myapp:abc1234). The image must be built in the same job. Takes precedence over Scan Path.",
+            "visibleRule": "bomType != aibom"
+        },
+        {
+            "name": "aibomSource",
+            "type": "pickList",
+            "label": "AIBOM Source",
+            "defaultValue": "huggingface",
+            "required": false,
+            "groupName": "aibom",
+            "helpMarkDown": "Where to read the model inventory from.",
+            "visibleRule": "bomType = aibom",
+            "options": {
+                "huggingface": "huggingface",
+                "bedrock": "bedrock"
+            }
+        },
+        {
+            "name": "aibomModel",
+            "type": "string",
+            "label": "AIBOM Model",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "aibom",
+            "helpMarkDown": "Model ID, e.g. google-bert/bert-base-uncased. Required when AIBOM Source is huggingface.",
+            "visibleRule": "bomType = aibom && aibomSource = huggingface"
+        },
+        {
+            "name": "awsRegion",
+            "type": "string",
+            "label": "AWS Region",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "aibom",
+            "helpMarkDown": "AWS region for the Bedrock inventory, e.g. us-east-1.",
+            "visibleRule": "bomType = aibom && aibomSource = bedrock"
+        },
+        {
+            "name": "awsAccessKeyId",
+            "type": "string",
+            "label": "AWS Access Key ID",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "aibom",
+            "helpMarkDown": "AWS access key with the bedrock:ListFoundationModels permission. Pass this from a secret pipeline variable.",
+            "visibleRule": "bomType = aibom && aibomSource = bedrock"
+        },
+        {
+            "name": "awsSecretAccessKey",
+            "type": "string",
+            "label": "AWS Secret Access Key",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "aibom",
+            "helpMarkDown": "Matching AWS secret access key. Pass this from a secret pipeline variable.",
+            "visibleRule": "bomType = aibom && aibomSource = bedrock"
+        },
+        {
+            "name": "outputFile",
+            "type": "string",
+            "label": "Output File",
+            "defaultValue": "",
+            "required": false,
+            "groupName": "advanced",
+            "helpMarkDown": "Where to write the BOM. Defaults to <repo>-<bomType>.json in the sources directory."
+        },
+        {
+            "name": "knoxctlVersion",
+            "type": "string",
+            "label": "knoxctl Version",
+            "defaultValue": "v0.10.0",
+            "required": false,
+            "groupName": "advanced",
+            "helpMarkDown": "Release tag of the knoxctl CLI to download."
+        },
+        {
+            "name": "skipTlsVerify",
+            "type": "boolean",
+            "label": "Skip TLS Verification",
+            "defaultValue": false,
+            "required": false,
+            "groupName": "advanced",
+            "helpMarkDown": "Disable TLS certificate verification when uploading. Only enable this for a Console with a self-signed certificate."
+        }
+    ],
+    "execution": {
+        "Node20_1": {
+            "target": "index.js"
+        }
+    }
+}
